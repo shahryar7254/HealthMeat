@@ -6,7 +6,9 @@ import '../services/api_service.dart';
 import 'prescription_result_screen.dart';
 
 class UploadPrescriptionScreen extends StatefulWidget {
-  const UploadPrescriptionScreen({super.key});
+  final String? initialPatientId;
+
+  const UploadPrescriptionScreen({super.key, this.initialPatientId});
 
   @override
   State<UploadPrescriptionScreen> createState() =>
@@ -16,9 +18,25 @@ class UploadPrescriptionScreen extends StatefulWidget {
 class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
   final _picker = ImagePicker();
   final _api = ApiService();
+  final _patientIdCtrl = TextEditingController();
   XFile? _image;
   Uint8List? _previewBytes;
   bool _scanning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPatientId != null &&
+        widget.initialPatientId!.trim().isNotEmpty) {
+      _patientIdCtrl.text = widget.initialPatientId!.trim();
+    }
+  }
+
+  @override
+  void dispose() {
+    _patientIdCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _pick(ImageSource source) async {
     try {
@@ -42,6 +60,14 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
   }
 
   Future<void> _scan() async {
+    final patientId = int.tryParse(_patientIdCtrl.text.trim());
+    if (patientId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Valid patient ID enter karo')),
+      );
+      return;
+    }
+
     if (_image == null || _previewBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pehle image select / capture karo')),
@@ -52,6 +78,7 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
     setState(() => _scanning = true);
     try {
       final result = await _api.scanPrescription(
+        patientId: patientId,
         imageBytes: _previewBytes!,
         filename: _image!.name.isNotEmpty ? _image!.name : 'prescription.jpg',
       );
@@ -83,15 +110,25 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Doctor ki prescription upload karo ya photo lo',
+                'Patient ID aur prescription image chahiye',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Image scan hogi aur medicines / doctor details dikhengi',
+                'Pehle patient profile banao, phir us ka ID yahan paste karo',
                 style: TextStyle(color: Colors.grey[600]),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _patientIdCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Patient ID *',
+                  border: OutlineInputBorder(),
+                  hintText: 'e.g. 1',
+                ),
+              ),
+              const SizedBox(height: 16),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(

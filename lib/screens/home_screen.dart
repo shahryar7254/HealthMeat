@@ -103,7 +103,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const UploadPrescriptionScreen(),
+                    builder: (_) => UploadPrescriptionScreen(
+                      initialPatientId: _patientIdCtrl.text.trim(),
+                    ),
                   ),
                 );
               },

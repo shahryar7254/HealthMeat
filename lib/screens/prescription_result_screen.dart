@@ -29,6 +29,10 @@ class PrescriptionResultScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 8),
+          if (result.overallSafetyStatus != null) ...[
+            _SafetyBanner(status: result.overallSafetyStatus!),
+            const SizedBox(height: 16),
+          ],
           _HeaderCard(result: result),
           const SizedBox(height: 16),
           if (result.diagnosis != null && result.diagnosis!.isNotEmpty) ...[
@@ -50,6 +54,31 @@ class PrescriptionResultScreen extends StatelessWidget {
             )
           else
             ...result.medicines.map((m) => _MedicineCard(item: m)),
+          if (result.dosageAlerts.isNotEmpty ||
+              result.interactionAlerts.isNotEmpty ||
+              result.contraindicationAlerts.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text('Safety Alerts', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...result.dosageAlerts.map(
+              (a) => _AlertTile(
+                icon: Icons.warning_amber_outlined,
+                alert: a,
+              ),
+            ),
+            ...result.interactionAlerts.map(
+              (a) => _AlertTile(
+                icon: Icons.sync_problem_outlined,
+                alert: a,
+              ),
+            ),
+            ...result.contraindicationAlerts.map(
+              (a) => _AlertTile(
+                icon: Icons.block_outlined,
+                alert: a,
+              ),
+            ),
+          ],
           if (result.instructions != null &&
               result.instructions!.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -168,11 +197,75 @@ class _MedicineCard extends StatelessWidget {
         ),
         subtitle: Text(
           [
+            if (item.strength != null) 'Strength: ${item.strength}',
             if (item.dosage != null) 'Dose: ${item.dosage}',
             if (item.frequency != null) item.frequency,
             if (item.duration != null) 'For ${item.duration}',
           ].join(' · '),
         ),
+      ),
+    );
+  }
+}
+
+class _SafetyBanner extends StatelessWidget {
+  final String status;
+
+  const _SafetyBanner({required this.status});
+
+  Color _color(BuildContext context) {
+    switch (status.toLowerCase()) {
+      case 'critical':
+        return Colors.red.shade100;
+      case 'warning':
+        return Colors.orange.shade100;
+      default:
+        return Colors.green.shade100;
+    }
+  }
+
+  IconData get _icon {
+    switch (status.toLowerCase()) {
+      case 'critical':
+        return Icons.error_outline;
+      case 'warning':
+        return Icons.warning_amber_outlined;
+      default:
+        return Icons.check_circle_outline;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: _color(context),
+      child: ListTile(
+        leading: Icon(_icon),
+        title: Text('Safety: ${status.toUpperCase()}'),
+        subtitle: Text(resultIdText()),
+      ),
+    );
+  }
+
+  String resultIdText() {
+    return 'Backend safety check complete';
+  }
+}
+
+class _AlertTile extends StatelessWidget {
+  final IconData icon;
+  final SafetyAlert alert;
+
+  const _AlertTile({required this.icon, required this.alert});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.orange.shade800),
+        title: Text(alert.message),
+        subtitle: Text('Level: ${alert.level}'),
       ),
     );
   }

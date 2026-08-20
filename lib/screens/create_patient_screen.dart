@@ -12,22 +12,34 @@ class CreatePatientScreen extends StatefulWidget {
 class _CreatePatientScreenState extends State<CreatePatientScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _ageCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _bloodCtrl = TextEditingController();
+  final _dobCtrl = TextEditingController();
+  final _weightCtrl = TextEditingController();
+  final _heightCtrl = TextEditingController();
+  final _conditionsCtrl = TextEditingController();
   final _allergiesCtrl = TextEditingController();
+  final _medicationsCtrl = TextEditingController();
   final _api = ApiService();
-  String _gender = 'male';
+  String _sex = 'male';
   bool _loading = false;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _ageCtrl.dispose();
-    _phoneCtrl.dispose();
-    _bloodCtrl.dispose();
+    _dobCtrl.dispose();
+    _weightCtrl.dispose();
+    _heightCtrl.dispose();
+    _conditionsCtrl.dispose();
     _allergiesCtrl.dispose();
+    _medicationsCtrl.dispose();
     super.dispose();
+  }
+
+  List<String> _splitList(String value) {
+    return value
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   Future<void> _submit() async {
@@ -35,20 +47,22 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
     setState(() => _loading = true);
     try {
       final body = <String, dynamic>{
-        'full_name': _nameCtrl.text.trim(),
-        'gender': _gender,
-        if (_ageCtrl.text.trim().isNotEmpty)
-          'age': int.tryParse(_ageCtrl.text.trim()),
-        if (_phoneCtrl.text.trim().isNotEmpty) 'phone': _phoneCtrl.text.trim(),
-        if (_bloodCtrl.text.trim().isNotEmpty)
-          'blood_group': _bloodCtrl.text.trim(),
-        if (_allergiesCtrl.text.trim().isNotEmpty)
-          'allergies': _allergiesCtrl.text.trim(),
+        'name': _nameCtrl.text.trim(),
+        'sex': _sex,
+        if (_dobCtrl.text.trim().isNotEmpty)
+          'date_of_birth': _dobCtrl.text.trim(),
+        if (_weightCtrl.text.trim().isNotEmpty)
+          'weight_kg': double.tryParse(_weightCtrl.text.trim()),
+        if (_heightCtrl.text.trim().isNotEmpty)
+          'height_cm': double.tryParse(_heightCtrl.text.trim()),
+        'conditions': _splitList(_conditionsCtrl.text),
+        'allergies': _splitList(_allergiesCtrl.text),
+        'current_medications': _splitList(_medicationsCtrl.text),
       };
 
       final data = await _api.createPatient(body);
       if (!mounted) return;
-      final id = data['id']?.toString() ?? data['patient_id']?.toString();
+      final id = data['id']?.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -84,7 +98,7 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
                 TextFormField(
                   controller: _nameCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Full name *',
+                    labelText: 'Name *',
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) {
@@ -94,18 +108,18 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _ageCtrl,
-                  keyboardType: TextInputType.number,
+                  controller: _dobCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Age',
+                    labelText: 'Date of birth',
                     border: OutlineInputBorder(),
+                    hintText: 'YYYY-MM-DD',
                   ),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _gender,
+                  initialValue: _sex,
                   decoration: const InputDecoration(
-                    labelText: 'Gender',
+                    labelText: 'Sex',
                     border: OutlineInputBorder(),
                   ),
                   items: const [
@@ -114,34 +128,55 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
                     DropdownMenuItem(value: 'other', child: Text('Other')),
                   ],
                   onChanged: (v) {
-                    if (v != null) setState(() => _gender = v);
+                    if (v != null) setState(() => _sex = v);
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
+                  controller: _weightCtrl,
+                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Phone',
+                    labelText: 'Weight (kg)',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _bloodCtrl,
+                  controller: _heightCtrl,
+                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Blood group',
+                    labelText: 'Height (cm)',
                     border: OutlineInputBorder(),
-                    hintText: 'e.g. A+',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _conditionsCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Conditions',
+                    border: OutlineInputBorder(),
+                    hintText: 'Comma separated, e.g. diabetes, hypertension',
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _allergiesCtrl,
-                  maxLines: 3,
+                  maxLines: 2,
                   decoration: const InputDecoration(
                     labelText: 'Allergies',
                     border: OutlineInputBorder(),
+                    hintText: 'Comma separated, e.g. penicillin, aspirin',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _medicationsCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Current medications',
+                    border: OutlineInputBorder(),
+                    hintText: 'Comma separated',
                   ),
                 ),
                 const SizedBox(height: 24),

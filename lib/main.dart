@@ -24,7 +24,7 @@ class HealthMateApp extends StatelessWidget {
           filled: true,
         ),
       ),
-      home: const login_screencreen(),
+      home: const LoginScreen(),
     );
   }
 }
