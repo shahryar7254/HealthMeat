@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/ui_components.dart';
 import 'prescription_result_screen.dart';
 
 class UploadPrescriptionScreen extends StatefulWidget {
@@ -103,101 +105,118 @@ class _UploadPrescriptionScreenState extends State<UploadPrescriptionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Scan Prescription')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Patient ID aur prescription image chahiye',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Pehle patient profile banao, phir us ka ID yahan paste karo',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _patientIdCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Patient ID *',
-                  border: OutlineInputBorder(),
-                  hintText: 'e.g. 1',
+      body: AppGradientBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SectionTitle(
+                  title: 'Upload Prescription',
+                  subtitle: 'Patient ID + clear photo of prescription',
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.shade50,
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _patientIdCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Patient ID *',
+                    hintText: 'e.g. 1',
+                    prefixIcon: Icon(Icons.badge_outlined),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: _previewBytes == null
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.receipt_long,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No image selected',
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Image.memory(_previewBytes!, fit: BoxFit.contain),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _scanning
-                          ? null
-                          : () => _pick(ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library_outlined),
-                      label: const Text('Gallery'),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _previewBytes == null
+                            ? AppColors.primary.withValues(alpha: 0.3)
+                            : Colors.grey.shade200,
+                        width: _previewBytes == null ? 2 : 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _previewBytes == null
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 48,
+                                    color: AppColors.primary.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No image selected',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Gallery se choose karo ya camera se lo',
+                                  style: TextStyle(color: AppColors.textMuted),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Image.memory(_previewBytes!, fit: BoxFit.contain),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _scanning
-                          ? null
-                          : () => _pick(ImageSource.camera),
-                      icon: const Icon(Icons.photo_camera_outlined),
-                      label: const Text('Camera'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: _scanning ? null : _scan,
-                icon: _scanning
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.document_scanner_outlined),
-                label: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(_scanning ? 'Scanning...' : 'Scan Prescription'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _scanning
+                            ? null
+                            : () => _pick(ImageSource.gallery),
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: const Text('Gallery'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _scanning
+                            ? null
+                            : () => _pick(ImageSource.camera),
+                        icon: const Icon(Icons.photo_camera_outlined),
+                        label: const Text('Camera'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                LoadingButton(
+                  loading: _scanning,
+                  onPressed: _scan,
+                  label: 'Scan Prescription',
+                  icon: Icons.document_scanner_outlined,
+                ),
+              ],
+            ),
           ),
         ),
       ),

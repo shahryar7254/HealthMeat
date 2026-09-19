@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const HealthMateApp());
@@ -14,17 +15,8 @@ class HealthMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'HealthMate AI',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0D9488),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        inputDecorationTheme: const InputDecorationTheme(
-          filled: true,
-        ),
-      ),
-      home: const LoginScreen(),
+      theme: AppTheme.light(),
+      home: const HomeScreen(),
     );
   }
 }

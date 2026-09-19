@@ -99,8 +99,9 @@ class ApiService {
     return _handle(res);
   }
 
-  /// Upload prescription image → scan API → structured data.
+  /// Upload prescription image → scan API → structured data + safety report.
   Future<PrescriptionScanResult> scanPrescription({
+    required int patientId,
     required List<int> imageBytes,
     required String filename,
   }) async {
@@ -110,13 +111,16 @@ class ApiService {
     }
 
     final token = await getToken();
+    if (token == null) {
+      throw Exception('Please login first');
+    }
+
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('${ApiConfig.baseUrl}${ApiConfig.scanPrescription}'),
     );
-    if (token != null) {
-      request.headers['Authorization'] = 'Bearer $token';
-    }
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['patient_id'] = patientId.toString();
     request.files.add(
       http.MultipartFile.fromBytes(
         'file',
@@ -129,6 +133,11 @@ class ApiService {
     final res = await http.Response.fromStream(streamed);
     final data = _handle(res);
     return PrescriptionScanResult.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> healthCheck() async {
+    final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/'));
+    return _handle(res);
   }
 
   Map<String, dynamic> _handle(http.Response res) {

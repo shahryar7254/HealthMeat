@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import '../widgets/ui_components.dart';
 
 class CreatePatientScreen extends StatefulWidget {
   const CreatePatientScreen({super.key});
@@ -86,114 +87,144 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Patient')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Name *',
-                    border: OutlineInputBorder(),
+      appBar: AppBar(title: const Text('New Patient')),
+      body: AppGradientBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SectionTitle(
+                    title: 'Patient Profile',
+                    subtitle: 'Fill in the health details below',
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Required';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _dobCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Date of birth',
-                    border: OutlineInputBorder(),
-                    hintText: 'YYYY-MM-DD',
+                  const SizedBox(height: 16),
+                  FormCard(
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nameCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Full name *',
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'Required';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _dobCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Date of birth',
+                                  hintText: 'YYYY-MM-DD',
+                                  prefixIcon: Icon(Icons.cake_outlined),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _sex,
+                                decoration: const InputDecoration(
+                                  labelText: 'Sex',
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'male',
+                                    child: Text('Male'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'female',
+                                    child: Text('Female'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'other',
+                                    child: Text('Other'),
+                                  ),
+                                ],
+                                onChanged: (v) {
+                                  if (v != null) setState(() => _sex = v);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _weightCtrl,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Weight (kg)',
+                                  prefixIcon: Icon(Icons.monitor_weight_outlined),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _heightCtrl,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Height (cm)',
+                                  prefixIcon: Icon(Icons.height_rounded),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _conditionsCtrl,
+                          maxLines: 2,
+                          decoration: const InputDecoration(
+                            labelText: 'Conditions',
+                            hintText: 'diabetes, hypertension',
+                            prefixIcon: Icon(Icons.healing_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _allergiesCtrl,
+                          maxLines: 2,
+                          decoration: const InputDecoration(
+                            labelText: 'Allergies',
+                            hintText: 'penicillin, aspirin',
+                            prefixIcon: Icon(Icons.warning_amber_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _medicationsCtrl,
+                          maxLines: 2,
+                          decoration: const InputDecoration(
+                            labelText: 'Current medications',
+                            hintText: 'Comma separated',
+                            prefixIcon: Icon(Icons.medication_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        LoadingButton(
+                          loading: _loading,
+                          onPressed: _submit,
+                          label: 'Save Patient',
+                          icon: Icons.check_rounded,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: _sex,
-                  decoration: const InputDecoration(
-                    labelText: 'Sex',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'male', child: Text('Male')),
-                    DropdownMenuItem(value: 'female', child: Text('Female')),
-                    DropdownMenuItem(value: 'other', child: Text('Other')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) setState(() => _sex = v);
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _weightCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight (kg)',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _heightCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Height (cm)',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _conditionsCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Conditions',
-                    border: OutlineInputBorder(),
-                    hintText: 'Comma separated, e.g. diabetes, hypertension',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _allergiesCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Allergies',
-                    border: OutlineInputBorder(),
-                    hintText: 'Comma separated, e.g. penicillin, aspirin',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _medicationsCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Current medications',
-                    border: OutlineInputBorder(),
-                    hintText: 'Comma separated',
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: _loading ? null : _submit,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Create Patient'),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
