@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'screens/login_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const HealthMateApp());
 }
 
@@ -15,7 +17,7 @@ class HealthMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'HealthMate AI',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
+      theme: AppTheme.light(forWeb: kIsWeb),
       home: const LoginScreen(),
     );
   }

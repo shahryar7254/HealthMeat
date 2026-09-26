@@ -10,16 +10,19 @@ class AppColors {
 }
 
 class AppTheme {
-  static ThemeData light() {
+  /// Web offline: system font use karo taake Google Fonts CDN na chahiye.
+  static ThemeData light({bool forWeb = false}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
       surface: AppColors.surface,
     );
 
-    return ThemeData(
+    final theme = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: forWeb ? 'Arial' : null,
+      fontFamilyFallback: forWeb ? const ['Segoe UI', 'Helvetica', 'sans-serif'] : null,
       scaffoldBackgroundColor: AppColors.surface,
       appBarTheme: AppBarTheme(
         centerTitle: false,
@@ -97,6 +100,13 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+    );
+
+    if (!forWeb) return theme;
+
+    return theme.copyWith(
+      textTheme: theme.textTheme.apply(fontFamily: 'Arial'),
+      primaryTextTheme: theme.primaryTextTheme.apply(fontFamily: 'Arial'),
     );
   }
 }
